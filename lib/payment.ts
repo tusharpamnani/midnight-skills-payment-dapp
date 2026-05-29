@@ -7,7 +7,6 @@ import {
   submitTxAsync,
   submitCallTxAsync,
 } from '@midnight-ntwrk/midnight-js-contracts';
-import { encodeUserAddress } from '@midnight-ntwrk/ledger-v8';
 import { Payment } from '@contract/index';
 
 import type { ConnectedSession } from './midnight';
@@ -106,7 +105,7 @@ export async function withdrawPayment(
   session: ConnectedSession,
   contractAddress: string,
   amount: bigint,
-  recipientAddress: string,
+  recipientBytes: Uint8Array,
 ): Promise<void> {
   const compiledContract = makeCompiledContract();
 
@@ -114,7 +113,7 @@ export async function withdrawPayment(
     compiledContract,
     contractAddress,
     circuitId: WITHDRAW_CIRCUIT,
-    args: [amount, { bytes: encodeUserAddress(recipientAddress) }],
+    args: [amount, { bytes: recipientBytes }],
     privateStateId: PRIVATE_STATE_ID,
   });
 }

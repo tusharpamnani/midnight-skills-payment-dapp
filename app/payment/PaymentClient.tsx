@@ -170,7 +170,7 @@ export default function PaymentClient() {
     if (!session || !contractAddress || !withdrawAmount) return;
     const amount = BigInt(withdrawAmount);
     await withLoading('Processing withdrawal (proving + submitting)…', async (setStatus) => {
-      await withdrawPayment(session, contractAddress, amount, session.unshieldedAddress);
+      await withdrawPayment(session, contractAddress, amount, session.coinPublicKeyBytes);
 
       setStatus('Waiting for indexer…');
       await pollForState(
@@ -534,20 +534,21 @@ export default function PaymentClient() {
                 </div>
               )}
 
-              {/* ── Error ── */}
-              {error && (
-                <div className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/[0.03] p-4 transition-all hover:shadow-md">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-                    <AlertCircle className="h-4 w-4 text-destructive" aria-hidden />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-destructive">Transaction failed</p>
-                    <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{error}</p>
-                  </div>
-                </div>
-              )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Error ── */}
+      {error && (
+        <div className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/[0.03] p-4 transition-all hover:shadow-md mt-6">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
+            <AlertCircle className="h-4 w-4 text-destructive" aria-hidden />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-destructive">Transaction failed</p>
+            <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{error}</p>
+          </div>
         </div>
       )}
     </div>

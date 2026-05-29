@@ -21,6 +21,24 @@ export function fromHex(hex: string): Uint8Array {
   return bytes;
 }
 
+function coinPublicKeyToBytes(pk: unknown): Uint8Array {
+  if (pk instanceof Uint8Array) return pk.length === 32 ? pk : pk.slice(0, 32);
+  if (typeof pk === 'string') {
+    const hex = pk.startsWith('0x') ? pk.slice(2) : pk;
+    if (hex.length === 64 && /^[0-9a-fA-F]+$/.test(hex)) return fromHex(hex);
+    console.warn('coinPublicKey not hex, using 32 zero bytes. Withdraw will fail until this is resolved.');
+    return new Uint8Array(32);
+  }
+  if (Array.isArray(pk)) {
+    return new Uint8Array(pk.length >= 32 ? pk.slice(0, 32) : [...pk, ...new Uint8Array(32 - pk.length)]);
+  }
+  if (pk && typeof pk === 'object' && 'bytes' in (pk as any)) {
+    return coinPublicKeyToBytes((pk as any).bytes);
+  }
+  console.warn(`Unexpected coin public key type: ${typeof pk}, using fallback.`);
+  return new Uint8Array(32);
+}
+
 export type ConnectedSession = {
   api: any;
   config: any;
@@ -33,6 +51,7 @@ export type ConnectedSession = {
     midnightProvider: MidnightProvider;
   };
   unshieldedAddress: string;
+  coinPublicKeyBytes: Uint8Array;
 };
 
 export function detectWallet(): Promise<any | null> {
@@ -177,6 +196,7 @@ export async function createConnectedSession(api: any, zkAssetBasePath: string):
       midnightProvider,
     },
     unshieldedAddress: unshieldedAddress.unshieldedAddress,
+    coinPublicKeyBytes: coinPublicKeyToBytes(shieldedAddress.shieldedCoinPublicKey),
   };
 }
 
