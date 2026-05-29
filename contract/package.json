@@ -1,0 +1,17 @@
+{
+  "name": "@app/payment-contract",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "compact": "compact compile src/payment.compact src/managed/payment",
+    "build": "npm run compact && npm run sync:assets",
+    "build:contract": "npm run compact && npm run sync:assets",
+    "sync:assets": "cp -Rf ./src/managed/payment/keys ../public/zk/payment/ 2>/dev/null; cp -Rf ./src/managed/payment/zkir ../public/zk/payment/ 2>/dev/null"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/ledger-v8": "^8.0.3"
+  }
+}

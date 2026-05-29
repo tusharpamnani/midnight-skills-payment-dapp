@@ -1,0 +1,39 @@
+pragma language_version >= 0.20;
+
+import CompactStandardLibrary;
+
+export ledger balance: Uint<128>;
+export ledger totalDeposited: Uint<128>;
+export ledger totalWithdrawn: Uint<128>;
+export ledger owner: Bytes<32>;
+
+witness ownerKey(): Bytes<32>;
+
+constructor() {
+  balance = 0;
+  totalDeposited = 0;
+  totalWithdrawn = 0;
+  owner = disclose(deriveKey(ownerKey()));
+}
+
+export circuit deposit(amount: Uint<128>): [] {
+  receiveUnshielded(default<Bytes<32>>, disclose(amount));
+  totalDeposited = disclose((totalDeposited + amount) as Uint<128>);
+  balance = disclose((balance + amount) as Uint<128>);
+}
+
+export circuit withdraw(amount: Uint<128>, recipient: UserAddress): [] {
+  assert(deriveKey(ownerKey()) == owner, "Only owner can withdraw");
+  assert(balance >= amount, "Insufficient balance");
+  sendUnshielded(
+    default<Bytes<32>>,
+    disclose(amount),
+    right<ContractAddress, UserAddress>(disclose(recipient))
+  );
+  totalWithdrawn = disclose((totalWithdrawn + amount) as Uint<128>);
+  balance = disclose((balance - amount) as Uint<128>);
+}
+
+pure circuit deriveKey(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "payment:owner:v1"), sk]);
+}

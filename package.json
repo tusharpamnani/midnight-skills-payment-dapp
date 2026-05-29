@@ -1,0 +1,39 @@
+{
+  "name": "skills-test",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "npm run compile && npm run sync:assets && next build --webpack",
+    "compile": "npm --prefix contract run compact",
+    "start": "next start",
+    "lint": "eslint",
+    "sync:assets": " cp -Rf ./contract/src/managed/payment/keys ./public/zk/payment/ 2>/dev/null; cp -Rf ./contract/src/managed/payment/zkir ./public/zk/payment/ 2>/dev/null; echo 'ZK assets synced'"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-js": "^2.5.0",
+    "@midnight-ntwrk/compact-runtime": "^0.16.0",
+    "@midnight-ntwrk/ledger": "^4.0.0",
+    "@midnight-ntwrk/ledger-v8": "^8.0.3",
+    "@midnight-ntwrk/midnight-js-contracts": "^4.0.4",
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "^4.0.4",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "^4.0.4",
+    "@midnight-ntwrk/midnight-js-network-id": "^4.0.4",
+    "@midnight-ntwrk/midnight-js-types": "^4.0.4",
+    "@midnight-ntwrk/wallet-sdk-address-format": "^3.1.1",
+    "lucide-react": "^1.17.0",
+    "next": "16.2.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
