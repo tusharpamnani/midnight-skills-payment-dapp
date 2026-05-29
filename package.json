@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "npm run compile && npm run sync:assets && next build --webpack",
+    "build": "next build --webpack",
+    "build:local": "npm run compile && npm run sync:assets && next build --webpack",
     "compile": "npm --prefix contract run compact",
     "start": "next start",
     "lint": "eslint",
