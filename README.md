@@ -1,6 +1,6 @@
 # Midnight Payment DApp
 
-Accept and withdraw tNIGHT payments on [Midnight Network](https://midnight.network) powered by the [1AM Wallet](https://1am.xyz). Deploy a payment smart contract, deposit tNIGHT, and withdraw it — all with zero gas fees via 1AM's ProofStation.
+Accept and withdraw tNIGHT payments on [Midnight Network](https://midnight.network) powered by the [1AM Wallet](https://1am.xyz) or [Lace Wallet](https://lace.io). Deploy a payment smart contract, deposit tNIGHT, and withdraw it — all with zero gas fees via 1AM's ProofStation.
 
 Built with Next.js 16, TypeScript, Tailwind CSS, and the Compact smart contract language.
 
@@ -28,7 +28,7 @@ Built with Next.js 16, TypeScript, Tailwind CSS, and the Compact smart contract 
 ## Prerequisites
 
 - **Node.js 22+** & npm
-- **1AM browser extension** — install from [1am.xyz](https://1am.xyz)
+- **1AM or Lace browser extension** — install from [1am.xyz](https://1am.xyz) or [lace.io](https://lace.io)
 - **Compact compiler** (for contract development):
 
 ```bash
@@ -70,20 +70,49 @@ This compiles the contract, copies ZK assets to `public/`, then runs `next build
 
 ## Contract Details
 
-The payment contract tracks `balance`, `totalDeposited`, `totalWithdrawn`, and `owner` on-ledger. The deployer generates a random 32-byte owner key stored in private state — only they can prove ownership and call withdraw.
+The payment contract tracks `balance`, `totalDeposited`, `totalWithdrawn`, and `owner` on-ledger. The deployer generates a random 32-byte owner key stored in private state — only they can prove ownership and call withdraw via ZK proof (the key never leaves the device).
 
 ## Networks
 
 The dApp connects to **preprod** by default. Change the network in `app/payment/PaymentClient.tsx`:
 
 ```ts
-const api = await wallet.connect('preview');  // or 'preprod', 'mainnet'
+const api = await result.wallet.connect('preprod');  // or 'preview', 'mainnet'
 ```
 
 The 1AM wallet handles network routing; indexer/RPC URLs come from `getConfiguration()`.
 
+## Demo
+
+- **Live Demo**: https://midnight-skills-payment-dapp.vercel.app/payment
+- **Demo Video**:
+<video src="public/demo.mp4" controls width="640"></video>
+
+## Contract
+
+- **Network**: Preview
+- **Contract Address**: `89d327e9182163b52708132d14a02f34e964a6c117d1dbf8d8ac6d57c9be20c4`
+- **Wallets**: 1AM, Lace
+
+## Privacy Claim
+
+This dApp demonstrates **zero-knowledge ownership authentication** — the core privacy primitive of Midnight Network.
+
+The deployer generates a random 32-byte secret key (`ownerKey`) that is never stored on-chain and never transmitted. Instead, a one-way hash (`persistentHash`) of this key is committed to the ledger as the `owner` field during contract deployment. When calling the `withdraw` circuit, the owner proves they possess the preimage of this hash using a zero-knowledge proof — **the secret key is never revealed to the network, the wallet, or any observer**.
+
+What an observer sees on-chain:
+- A 32-byte hash in the `owner` ledger field (computationally irreversible)
+- A valid ZK proof attached to the withdrawal transaction
+
+What remains hidden:
+- The actual `ownerKey` (never leaves the user's device)
+- The mapping from deployer identity to contract ownership
+
+This is an **observable privacy behavior**: the withdraw circuit will fail if called by anyone who does not hold the secret key, yet no information about the key is leaked through the proof or the public transcript. The contract enforces access control via ZK rather than signature verification.
+
 ## Notes
 
+- Supports both **1AM** and **Lace** wallets — detection is automatic
 - Transaction fees are **zero** — 1AM's ProofStation sponsors all DUST costs
 - Contract state is polled from the indexer after deploy/deposit/withdraw (indexer can lag 10–60s on preprod)
 - The indexer patch (`lib/midnight.ts`) works around a GraphQL `offset: null` bug on preview/preprod
